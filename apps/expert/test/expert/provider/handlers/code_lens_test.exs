@@ -24,12 +24,19 @@ defmodule Expert.Provider.Handlers.CodeLensTest do
     start_supervised!({Expert.Project.Supervisor, project})
     start_supervised!({Expert.ActiveProjects, []})
 
+    Expert.Configuration.new() |> Expert.Configuration.set()
+
     EngineApi.register_listener(project, self(), [project_compiled()])
     EngineApi.schedule_compile(project, true)
 
     assert_receive project_compiled(), 5000
 
     {:ok, project: project}
+  end
+
+  setup do
+    :persistent_term.erase(Expert.Configuration)
+    :ok
   end
 
   defp with_indexing_enabled(_) do
@@ -60,8 +67,7 @@ defmodule Expert.Provider.Handlers.CodeLensTest do
 
   def handle(request, project) do
     Expert.ActiveProjects.add_projects([project])
-    config = Expert.Configuration.new()
-    Handlers.CodeLens.handle(request, config)
+    Handlers.CodeLens.handle(request)
   end
 
   describe "code lens for mix.exs" do

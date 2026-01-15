@@ -20,6 +20,8 @@ defmodule Expert.Provider.Handlers.FindReferencesTest do
   end
 
   setup do
+    :persistent_term.erase(Expert.Configuration)
+    Expert.Configuration.new() |> Expert.Configuration.set()
     project = project(:navigations)
     path = file_path(project, Path.join("lib", "my_definition.ex"))
     uri = Document.Path.ensure_uri(path)
@@ -47,8 +49,7 @@ defmodule Expert.Provider.Handlers.FindReferencesTest do
 
   def handle(request, project) do
     Expert.ActiveProjects.add_projects([project])
-    config = Expert.Configuration.new()
-    Handlers.FindReferences.handle(request, config)
+    Handlers.FindReferences.handle(request)
   end
 
   describe "find references" do
